@@ -5,6 +5,7 @@ import ImageGallery from './ImageGallery';
 import Searchbar from './Searchbar';
 import Button from './Button';
 import Loader from './Loader';
+import Modal from './Modal/Modal.component';
 
 const loadingErrorMsg = 'Oops! Something went wrong! Try reloading the page!';
 const imagesNotFoundMsg =
@@ -17,6 +18,7 @@ const perPage = 12;
 // bats cats -- 8 images
 // fly cats - 11 image
 // fly castle - 28 images
+// sdf - 1 image
 
 export default class App extends Component {
   state = {
@@ -25,6 +27,8 @@ export default class App extends Component {
     searchQuery: '',
     currentPage: 1,
     loadMore: false,
+    isOpenModal: false,
+    modalData: null,
   };
 
   onSearchHandler = async searchQuery => {
@@ -35,7 +39,7 @@ export default class App extends Component {
         this.state.currentPage,
         perPage
       );
-      console.log('searchResults', searchResults);
+
       if (searchResults.total === 0) {
         Notify.failure(imagesNotFoundMsg);
       } else {
@@ -78,17 +82,39 @@ export default class App extends Component {
     }
   };
 
+  openModal = imageData => {
+    this.setState({
+      isOpenModal: true,
+      modalData: imageData,
+    });
+  };
+
+  closeModal = () => {
+    this.setState({
+      isOpenModal: false,
+      modalData: null,
+    });
+  };
+
   render() {
     const { images, isLoading, loadMore } = this.state;
 
     return (
       <div className="App">
         <Searchbar onSubmit={this.onSearchHandler} />
-        {images.length > 0 && <ImageGallery images={images} />}
+        {images.length > 0 && (
+          <ImageGallery images={images} openModal={this.openModal} />
+        )}
         {loadMore && !isLoading && (
           <Button name="Load more" onClickHandler={this.loadMoreHandler} />
         )}
         {isLoading && <Loader />}
+        {this.state.isOpenModal && (
+          <Modal
+            closeModal={this.closeModal}
+            modalData={this.state.modalData}
+          />
+        )}
       </div>
     );
   }
