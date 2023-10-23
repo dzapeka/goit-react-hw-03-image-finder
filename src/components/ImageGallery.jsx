@@ -1,7 +1,7 @@
 import { Component } from 'react';
-import { ImageGalleryItem } from './ImageGalleryItem';
+import ImageGalleryItem from './ImageGalleryItem';
 
-export class ImageGallery extends Component {
+export default class ImageGallery extends Component {
   render() {
     const { images } = this.props;
     return (

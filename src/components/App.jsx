@@ -1,10 +1,9 @@
 import { Component } from 'react';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
-
-import { ImageGallery } from './ImageGallery';
-import { Searchbar } from './Searchbar';
 import fetchImages from 'js/pixabay-api';
-import { Button } from './Button';
+import ImageGallery from './ImageGallery';
+import Searchbar from './Searchbar';
+import Button from './Button';
 import Loader from './Loader';
 
 const loadingErrorMsg = 'Oops! Something went wrong! Try reloading the page!';
@@ -61,7 +60,7 @@ export default class App extends Component {
       const { searchQuery, currentPage } = this.state;
       const nextPage = currentPage + 1;
       const searchResults = await fetchImages(searchQuery, nextPage, perPage);
-      const loadMore = currentPage < Math.ceil(searchResults.totalHits / 12);
+      const loadMore = nextPage < Math.ceil(searchResults.totalHits / 12);
 
       if (!loadMore) {
         Notify.info(endOfResultsMsg);
