@@ -4,6 +4,7 @@ const PIXABAY_API_KEY = '39076335-b62ce52c3bdb788b53746507f';
 const BASE_URL = 'https://pixabay.com/api/';
 
 const fetchImages = async (query, page = 1, perPage = 12) => {
+  console.log(`fetchImages - "${query}"- ${page} - ${perPage}`);
   return await axios
     .get(BASE_URL, {
       params: {
