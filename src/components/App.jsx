@@ -15,9 +15,9 @@ const endOfResultsMsg =
 
 const perPage = 12;
 
-// bats cats
-// fly cats
-// fly castle
+// bats cats -- 8 images
+// fly cats - 11 image
+// fly castle - 28 images
 
 export default class App extends Component {
   state = {
@@ -45,6 +45,7 @@ export default class App extends Component {
           images: searchResults.hits,
           currentPage: 1,
           loadMore: searchResults.totalHits > perPage,
+          searchQuery,
         });
       }
     } catch (error) {
@@ -57,19 +58,19 @@ export default class App extends Component {
   loadMoreHandler = async () => {
     this.setState({ isLoading: true });
     try {
-      const page = this.state.currentPage + 1;
-      const searchResults = await fetchImages(
-        this.state.searchQuery,
-        page,
-        perPage
-      );
-      console.log('Load more - searchResults', searchResults);
-      console.log('currentPage', this.state.currentPage);
+      const { searchQuery, currentPage } = this.state;
+      const nextPage = currentPage + 1;
+      const searchResults = await fetchImages(searchQuery, nextPage, perPage);
+      const loadMore = currentPage < Math.ceil(searchResults.totalHits / 12);
+
+      if (!loadMore) {
+        Notify.info(endOfResultsMsg);
+      }
+
       this.setState(prevState => ({
         images: [...prevState.images, ...searchResults.hits],
-        currentPage: prevState.currentPage + 1,
-        loadMore:
-          this.state.currentPage < Math.ceil(searchResults.totalHits / 12),
+        currentPage: nextPage,
+        loadMore,
       }));
     } catch (error) {
       Notify.failure(loadingErrorMsg);
