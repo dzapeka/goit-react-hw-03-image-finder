@@ -1,5 +1,6 @@
 import { Component } from 'react';
-import ImageGalleryItem from './ImageGalleryItem';
+import ImageGalleryItem from '../ImageGalleryItem/ImageGalleryItem';
+import styles from './ImageGallery.module.css';
 
 export default class ImageGallery extends Component {
   render() {
@@ -7,7 +8,7 @@ export default class ImageGallery extends Component {
     return (
       <>
         {images.length > 0 && (
-          <ul className="ImageGallery">
+          <ul className={styles.ImageGallery}>
             {images.map(({ id, webformatURL, tags, largeImageURL }) => (
               <ImageGalleryItem
                 key={id}

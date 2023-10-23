@@ -1,11 +1,11 @@
 import { Component } from 'react';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 import fetchImages from 'js/pixabay-api';
-import ImageGallery from './ImageGallery';
-import Searchbar from './Searchbar';
-import Button from './Button';
-import Loader from './Loader';
-import Modal from './Modal/Modal.component';
+import ImageGallery from './ImageGallery/ImageGallery';
+import Searchbar from './Searchbar/Searchbar';
+import Button from './Button/Button';
+import Loader from './Loader/Loader';
+import Modal from './Modal/Modal';
 
 const loadingErrorMsg = 'Oops! Something went wrong! Try reloading the page!';
 const imagesNotFoundMsg =
@@ -14,11 +14,6 @@ const endOfResultsMsg =
   "We're sorry, but you've reached the end of search results.";
 
 const perPage = 12;
-
-// bats cats -- 8 images
-// fly cats - 11 image
-// fly castle - 28 images
-// sdf - 1 image
 
 export default class App extends Component {
   state = {
