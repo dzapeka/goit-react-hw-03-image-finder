@@ -26,55 +26,59 @@ export default class App extends Component {
     modalData: null,
   };
 
-  onSearchHandler = async searchQuery => {
-    this.setState({ isLoading: true });
-    try {
-      const searchResults = await fetchImages(
-        searchQuery,
-        this.state.currentPage,
-        perPage
-      );
+  async componentDidUpdate(prevProps, prevState) {
+    const { searchQuery, currentPage } = this.state;
 
-      if (searchResults.total === 0) {
-        Notify.failure(imagesNotFoundMsg);
-      } else {
-        Notify.success(`Hooray! We found ${searchResults.totalHits} images.`);
-        this.setState({
-          images: searchResults.hits,
-          currentPage: 1,
-          loadMore: searchResults.totalHits > perPage,
+    if (
+      prevState.searchQuery !== searchQuery ||
+      prevState.currentPage !== currentPage
+    ) {
+      this.setState({ isLoading: true });
+
+      try {
+        const searchResults = await fetchImages(
           searchQuery,
-        });
+          currentPage,
+          perPage
+        );
+
+        if (searchResults.total === 0) {
+          Notify.failure(imagesNotFoundMsg);
+        } else {
+          if (currentPage === 1) {
+            Notify.success(
+              `Hooray! We found ${searchResults.totalHits} images.`
+            );
+          }
+
+          const loadMore =
+            currentPage < Math.ceil(searchResults.totalHits / perPage);
+
+          if (!loadMore) {
+            Notify.info(endOfResultsMsg);
+          }
+
+          this.setState(prevState => ({
+            images: [...prevState.images, ...searchResults.hits],
+            loadMore,
+          }));
+        }
+      } catch (error) {
+        Notify.failure(loadingErrorMsg);
+      } finally {
+        this.setState({ isLoading: false });
       }
-    } catch (error) {
-      Notify.failure(loadingErrorMsg);
-    } finally {
-      this.setState({ isLoading: false });
     }
+  }
+
+  onSearchHandler = async searchQuery => {
+    this.setState({ searchQuery, images: [], currentPage: 1 });
   };
 
-  loadMoreHandler = async () => {
-    this.setState({ isLoading: true });
-    try {
-      const { searchQuery, currentPage } = this.state;
-      const nextPage = currentPage + 1;
-      const searchResults = await fetchImages(searchQuery, nextPage, perPage);
-      const loadMore = nextPage < Math.ceil(searchResults.totalHits / 12);
-
-      if (!loadMore) {
-        Notify.info(endOfResultsMsg);
-      }
-
-      this.setState(prevState => ({
-        images: [...prevState.images, ...searchResults.hits],
-        currentPage: nextPage,
-        loadMore,
-      }));
-    } catch (error) {
-      Notify.failure(loadingErrorMsg);
-    } finally {
-      this.setState({ isLoading: false });
-    }
+  loadMoreHandler = () => {
+    this.setState(prevState => ({
+      currentPage: prevState.currentPage + 1,
+    }));
   };
 
   openModal = imageData => {
@@ -92,7 +96,7 @@ export default class App extends Component {
   };
 
   render() {
-    const { images, isLoading, loadMore } = this.state;
+    const { images, isLoading, loadMore, isOpenModal, modalData } = this.state;
 
     return (
       <div className="App">
@@ -104,11 +108,8 @@ export default class App extends Component {
           <Button name="Load more" onClickHandler={this.loadMoreHandler} />
         )}
         {isLoading && <Loader />}
-        {this.state.isOpenModal && (
-          <Modal
-            closeModal={this.closeModal}
-            modalData={this.state.modalData}
-          />
+        {isOpenModal && (
+          <Modal closeModal={this.closeModal} modalData={modalData} />
         )}
       </div>
     );
