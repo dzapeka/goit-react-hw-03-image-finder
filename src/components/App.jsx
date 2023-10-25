@@ -7,10 +7,10 @@ import Button from './Button/Button';
 import Loader from './Loader/Loader';
 import Modal from './Modal/Modal';
 
-const loadingErrorMsg = 'Oops! Something went wrong! Try reloading the page!';
-const imagesNotFoundMsg =
+const errorMessage = 'Oops! Something went wrong! Try reloading the page!';
+const noImagesMessage =
   'Sorry, there are no images matching your search query. Please try again.';
-const endOfResultsMsg =
+const endOfResultsMessage =
   "We're sorry, but you've reached the end of search results.";
 
 const perPage = 12;
@@ -26,48 +26,46 @@ export default class App extends Component {
     modalData: null,
   };
 
-  async componentDidUpdate(prevProps, prevState) {
-    const { searchQuery, currentPage } = this.state;
+  componentDidUpdate(prevProps, prevState) {
+    const { searchQuery, currentPage, images } = this.state;
+    const searchQueryChanged = prevState.searchQuery !== searchQuery;
+    const currentPageChanged = prevState.currentPage !== currentPage;
+    // Checking if it is a new search with the same searchQuery
+    const imagesClearedAndNewSearch =
+      prevState.images !== images && images.length === 0;
 
-    if (
-      prevState.searchQuery !== searchQuery ||
-      prevState.currentPage !== currentPage
-    ) {
+    if (searchQueryChanged || currentPageChanged || imagesClearedAndNewSearch) {
       this.setState({ isLoading: true });
+      fetchImages(searchQuery, currentPage, perPage)
+        .then(searchResults => {
+          if (searchResults.total === 0) {
+            Notify.failure(noImagesMessage);
+          } else {
+            if (currentPage === 1) {
+              Notify.success(
+                `Hooray! We found ${searchResults.totalHits} images.`
+              );
+            }
 
-      try {
-        const searchResults = await fetchImages(
-          searchQuery,
-          currentPage,
-          perPage
-        );
+            const loadMore =
+              currentPage < Math.ceil(searchResults.totalHits / perPage);
 
-        if (searchResults.total === 0) {
-          Notify.failure(imagesNotFoundMsg);
-        } else {
-          if (currentPage === 1) {
-            Notify.success(
-              `Hooray! We found ${searchResults.totalHits} images.`
-            );
+            if (!loadMore) {
+              Notify.info(endOfResultsMessage);
+            }
+
+            this.setState(prevState => ({
+              images: [...prevState.images, ...searchResults.hits],
+              loadMore,
+            }));
           }
-
-          const loadMore =
-            currentPage < Math.ceil(searchResults.totalHits / perPage);
-
-          if (!loadMore) {
-            Notify.info(endOfResultsMsg);
-          }
-
-          this.setState(prevState => ({
-            images: [...prevState.images, ...searchResults.hits],
-            loadMore,
-          }));
-        }
-      } catch (error) {
-        Notify.failure(loadingErrorMsg);
-      } finally {
-        this.setState({ isLoading: false });
-      }
+        })
+        .catch(error => {
+          Notify.failure(errorMessage);
+        })
+        .finally(() => {
+          this.setState({ isLoading: false });
+        });
     }
   }
 
