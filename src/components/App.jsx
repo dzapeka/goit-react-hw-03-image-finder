@@ -7,6 +7,7 @@ import Button from './Button/Button';
 import Loader from './Loader/Loader';
 import Modal from './Modal/Modal';
 
+const successMessage = totalHits => `Hooray! We found ${totalHits} images.`;
 const errorMessage = 'Oops! Something went wrong! Try reloading the page!';
 const noImagesMessage =
   'Sorry, there are no images matching your search query. Please try again.';
@@ -42,9 +43,7 @@ export default class App extends Component {
             Notify.failure(noImagesMessage);
           } else {
             if (currentPage === 1) {
-              Notify.success(
-                `Hooray! We found ${searchResults.totalHits} images.`
-              );
+              Notify.success(successMessage(searchResults.totalHits));
             }
 
             const loadMore =
